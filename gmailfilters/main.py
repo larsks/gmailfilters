@@ -18,6 +18,8 @@ querymap = {
     'feed': NS_FEED,
 }
 
+basic_props = ['hasTheWord', 'shouldArchive', 'shouldTrash', 'from']
+
 def parse_args():
     p = argparse.ArgumentParser()
 
@@ -27,10 +29,13 @@ def parse_args():
                    dest='toxml',
                    action='store_false')
     p.add_argument('--output', '-o')
+    p.add_argument('--no-collapse', '-n',
+                   action='store_true')
     p.add_argument('input',
                    nargs='?')
 
     return p.parse_args()
+
 
 def main():
     args = parse_args()
@@ -39,6 +44,25 @@ def main():
         cmd_toxml(args)
     else:
         cmd_fromxml(args)
+
+
+def same_condition(f1, f2):
+    # This is used for coalescing labels.  If there aren't any labels
+    # we can just bail out.
+
+    if not ('label' in f1 and 'label' in f2):
+        return False
+
+    for prop in basic_props:
+        inf1 = prop in f1
+        inf2 = prop in f2
+        if (inf1 and inf2) and not (f1[prop] == f2[prop]):
+            return False
+        elif (inf1 != inf2):
+            return False
+
+    return True
+
 
 def cmd_fromxml(args):
     with (sys.stdin if args.input is None else open(args.input)) as fd:
@@ -53,7 +77,10 @@ def cmd_fromxml(args):
 
             filterdict[prop.get('name')] = prop.get('value')
 
-        filters.append(filterdict)
+        if filters and not args.no_collapse and same_condition(filterdict, filters[-1]):
+            filters[-1]['label'] += ' %s' % filterdict['label']
+        else:
+            filters.append(filterdict)
 
     with (sys.stdout if args.output is None else open(args.output, 'w')) as fd:
         fd.write(yaml.dump(filters, default_flow_style=False))
@@ -78,7 +105,7 @@ def cmd_toxml(args):
         updated.text = now
         cat = etree.SubElement(entry, '{%s}content' % NS_FEED)
 
-        for propname in ['hasTheWord', 'shouldArchive', 'shouldTrash', 'from']:
+        for propname in basic_props:
             if propname in filter:
                 prop = etree.SubElement(entry, '{%s}property' % NS_APP)
                 prop.set('name', propname)
