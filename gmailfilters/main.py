@@ -1,125 +1,18 @@
-from copy import deepcopy
-from lxml import etree
-import argparse
-import datetime
 import sys
-import yaml
+import cliff
+import cliff.app
+import cliff.commandmanager
 
-NS_FEED = 'http://www.w3.org/2005/Atom'
-NS_APP = 'http://schemas.google.com/apps/2006'
+class GmailFilterApp (cliff.app.App):
+    def __init__(self):
+        super(GmailFilterApp, self).__init__(
+            description='Gmail filtering tool',
+            version='0.1',
+            command_manager=cliff.commandmanager.CommandManager('gmf.cmd'),
+            deferred_help=True,
+        )
 
-nsmap = {
-    'app': NS_APP,
-    None: NS_FEED,
-}
+def main(argv=sys.argv[1:]):
+    app = GmailFilterApp()
+    return app.run(argv)
 
-querymap = {
-    'app': NS_APP,
-    'feed': NS_FEED,
-}
-
-basic_props = ['hasTheWord', 'shouldArchive', 'shouldTrash', 'from']
-
-def parse_args():
-    p = argparse.ArgumentParser()
-
-    p.add_argument('--toxml',
-                   action='store_true')
-    p.add_argument('--fromxml',
-                   dest='toxml',
-                   action='store_false')
-    p.add_argument('--output', '-o')
-    p.add_argument('--no-collapse', '-n',
-                   action='store_true')
-    p.add_argument('input',
-                   nargs='?')
-
-    return p.parse_args()
-
-
-def main():
-    args = parse_args()
-
-    if args.toxml:
-        cmd_toxml(args)
-    else:
-        cmd_fromxml(args)
-
-
-def same_condition(f1, f2):
-    # This is used for coalescing labels.  If there aren't any labels
-    # we can just bail out.
-
-    if not ('label' in f1 and 'label' in f2):
-        return False
-
-    for prop in basic_props:
-        inf1 = prop in f1
-        inf2 = prop in f2
-        if (inf1 and inf2) and not (f1[prop] == f2[prop]):
-            return False
-        elif (inf1 != inf2):
-            return False
-
-    return True
-
-
-def cmd_fromxml(args):
-    with (sys.stdin if args.input is None else open(args.input)) as fd:
-        doc = etree.parse(fd)
-
-    filters = []
-    for filter in doc.xpath('/feed:feed/feed:entry', namespaces=querymap):
-        filterdict = {}
-        for prop in filter.xpath('app:property', namespaces=querymap):
-            if prop.get('name').startswith('size'):
-                continue
-
-            filterdict[prop.get('name')] = prop.get('value')
-
-        if filters and not args.no_collapse and same_condition(filterdict, filters[-1]):
-            filters[-1]['label'] += ' %s' % filterdict['label']
-        else:
-            filters.append(filterdict)
-
-    with (sys.stdout if args.output is None else open(args.output, 'w')) as fd:
-        fd.write(yaml.dump(filters, default_flow_style=False))
-
-def cmd_toxml(args):
-    with (sys.stdin if args.input is None else open(args.input)) as fd:
-        filters = yaml.load(fd)
-
-    doc = etree.Element('{%s}feed' % NS_FEED, nsmap=nsmap)
-    title = etree.SubElement(doc, '{%s}title' % NS_FEED)
-    title.text = 'Mail Filters'
-
-    now = datetime.datetime.utcnow().isoformat()
-
-    for filter in filters:
-        entry = etree.Element('{%s}entry' % NS_FEED)
-        title = etree.SubElement(entry, '{%s}title' % NS_FEED)
-        title.text = 'Mail Filter'
-        cat = etree.SubElement(entry, '{%s}category' % NS_FEED)
-        cat.set('term', 'filter')
-        updated = etree.SubElement(entry, '{%s}updated' % NS_FEED)
-        updated.text = now
-        cat = etree.SubElement(entry, '{%s}content' % NS_FEED)
-
-        for propname in basic_props:
-            if propname in filter:
-                prop = etree.SubElement(entry, '{%s}property' % NS_APP)
-                prop.set('name', propname)
-                prop.set('value', filter[propname])
-
-        if 'label' in filter:
-            for label in filter['label'].split():
-                e = deepcopy(entry)
-                prop = etree.SubElement(e, '{%s}property' % NS_APP)
-                prop.set('name', 'label')
-                prop.set('value', label)
-                doc.append(e)
-        else:
-            doc.append(entry)
-
-    with (sys.stdout if args.output is None else open(args.output, 'w')) as fd:
-        fd.write(etree.tostring(doc, pretty_print=True))
