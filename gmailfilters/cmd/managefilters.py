@@ -30,9 +30,10 @@ basic_props = [
 ]
 
 def same_condition(f1, f2):
+    '''Deterine if two filters are identical.'''
+
     # This is used for coalescing labels.  If there aren't any labels
     # we can just bail out.
-
     if not ('label' in f1 and 'label' in f2):
         return False
 
@@ -45,6 +46,16 @@ def same_condition(f1, f2):
             return False
 
     return True
+
+
+def to_prop_str(v):
+    '''Convert booleans to lowercase strings, just convert everything
+    else naively to strings.'''
+
+    if isinstance(v, bool):
+        return str(v).lower()
+    else:
+        return str(v)
 
 
 class ManageFilters(cliff.command.Command):
@@ -115,7 +126,11 @@ class ManageFilters(cliff.command.Command):
                 if propname in filter:
                     prop = etree.SubElement(entry, '{%s}property' % NS_APP)
                     prop.set('name', propname)
-                    prop.set('value', filter[propname])
+
+                    # prop.set requires a string, so we call
+                    # to_prop_str() to convert bools, ints, etc. to
+                    # strings.
+                    prop.set('value', to_prop_str(filter[propname]))
 
             if 'label' in filter:
                 for label in filter['label'].split():
