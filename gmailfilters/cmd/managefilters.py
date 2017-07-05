@@ -21,7 +21,13 @@ querymap = {
     'feed': NS_FEED,
 }
 
-basic_props = ['hasTheWord', 'shouldArchive', 'shouldTrash', 'from']
+basic_props = [
+    'hasTheWord',
+    'shouldStar',
+    'shouldArchive',
+    'shouldTrash',
+    'from',
+]
 
 def same_condition(f1, f2):
     # This is used for coalescing labels.  If there aren't any labels
