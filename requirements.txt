@@ -1,3 +1,4 @@
+imapclient
 lxml
 PyYAML
 pbr
