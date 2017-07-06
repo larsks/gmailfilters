@@ -1,5 +1,6 @@
 import argparse
 import cliff.command
+import fnmatch
 import imapclient
 import imaplib
 import os
@@ -101,7 +102,17 @@ class BulkFilter(cliff.command.Command):
                 else:
                     add_flags.append(getattr(imapclient, flag))
 
-        for folder in args.folders:
+        all_folders = server.list_folders()
+        selected_folders = []
+        for pattern in args.folders:
+            for folder in all_folders:
+                if r'\Noselect' in folder[0]:
+                    continue
+
+                if fnmatch.fnmatch(folder[2], pattern):
+                    selected_folders.append(folder[2])
+
+        for folder in selected_folders:
             self.app.LOG.warning('processing folder %s', folder)
 
             try:
