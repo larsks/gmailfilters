@@ -130,9 +130,13 @@ class BulkFilter(cliff.command.Command):
                                       chunk[0], chunk[-1], folder)
                     server.expunge()
                 elif args.action == 'flag':
-                    self.app.LOG.info('flagging messages %d...%d from %s (%s)',
-                                 chunk[0], chunk[-1], folder, flags)
-                    res = server.add_flags(chunk, add_flags)
+                    if add_flags:
+                        self.app.LOG.info('adding flags to  messages %d...%d from %s (%s)',
+                                     chunk[0], chunk[-1], folder, add_flags)
+                        res = server.add_flags(chunk, add_flags)
+                    if del_flags:
+                        self.app.LOG.info('removing flags from  messages %d...%d from %s (%s)',
+                                     chunk[0], chunk[-1], folder, del_flags)
                     res = server.remove_flags(chunk, del_flags)
                 elif args.action == 'label':
                     self.app.LOG.info('labelling messages %d...%d from %s (%s)',
