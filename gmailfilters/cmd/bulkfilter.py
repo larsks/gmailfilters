@@ -8,14 +8,18 @@ import yaml
 
 from gmailfilters import exceptions
 
-valid_flags = [
+valid_pos_flags = [
     'SEEN',
     'ANSWERED',
-    'DRAFT',
-    'DELETED',
     'FLAGGED',
-    'SEEN',
+    'DELETED',
+    'DRAFT',
+    'RECENT',
 ]
+
+valid_neg_flags = ['-' + x for x in valid_pos_flags]
+
+valid_flags = valid_pos_flags + valid_neg_flags
 
 headers = (
     ('from_', 'From'),
@@ -36,24 +40,30 @@ class BulkFilter(cliff.command.Command):
     def get_parser(self, prog_name):
         p = super(BulkFilter, self).get_parser(prog_name)
 
-        p.add_argument('-a', '--account', default='default')
-        p.add_argument('-f', '--config')
-        p.add_argument('-s', '--chunksize', default=50, type=int)
-        p.add_argument('-Q', '--query')
+        p.add_argument('-a', '--account',
+                       default='default',
+                       help='Which account (from configuration file) to use')
+        p.add_argument('-f', '--config',
+                       help='Path to configuration file')
+        p.add_argument('-s', '--chunksize',
+                       default=50,
+                       type=int,
+                       help='Number of messages to process at a time')
+        p.add_argument('-Q', '--query',
+                       help='A gmail-syntax search query')
         p.add_argument('-A', '--action',
                        choices=['info', 'delete', 'flag', 'label'],
-                       default='info')
+                       default='info',
+                       help='Which action to perform')
         p.add_argument('-F', '--flag',
                        action='append',
                        default=[],
-                       choices=valid_flags)
+                       choices=valid_flags,
+                       help='Flag to add to or remove from messages')
         p.add_argument('-L', '--label',
                        action='append',
-                       default=[])
-        p.add_argument('-v', '--verbose',
-                       dest='loglevel',
-                       action='store_const',
-                       const='INFO')
+                       default=[],
+                       help='Label to add to message')
 
         p.add_argument('folders', nargs='*', default=['[Gmail]/All Mail'])
 
