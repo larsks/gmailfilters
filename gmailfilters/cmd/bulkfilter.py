@@ -131,7 +131,7 @@ class BulkFilter(cliff.command.Command):
                 elif args.action == 'info':
                     self.app.LOG.info('getting info for messages %d...%d from %s',
                                  chunk[0], chunk[-1], folder)
-                    res = server.fetch(chunk, data=['INTERNALDATE', 'FLAGS', 'ENVELOPE'])
+                    res = server.fetch(chunk, data=['ENVELOPE', 'FLAGS', 'X-GM-LABELS'])
                     for msg in sorted(res.keys()):
                         print '%04d: %s' % (msg, res[msg]['ENVELOPE'].subject)
                         for header in headers:
@@ -147,5 +147,7 @@ class BulkFilter(cliff.command.Command):
 
                             print '      %s: %s' % (
                                 header[1], hval)
+                        print '      Labels: %s' % (
+                            ' ' .join(str(x) for x in res[msg]['X-GM-LABELS']))
                         print
 
