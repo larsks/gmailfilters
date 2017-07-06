@@ -55,7 +55,7 @@ class BulkFilter(cliff.command.Command):
                        action='store_const',
                        const='INFO')
 
-        p.add_argument('folders', nargs='*', default=[])
+        p.add_argument('folders', nargs='*', default=['[Gmail]/All Mail'])
 
         p.set_defaults(loglevel='WARNING')
 
