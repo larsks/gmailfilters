@@ -3,3 +3,6 @@ class GmailFilterError(Exception):
 
 class NoConfigurationFile(GmailFilterError):
     pass
+
+class NoSuchAccount(GmailFilterError):
+    pass

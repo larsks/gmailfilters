@@ -21,13 +21,19 @@ querymap = {
     'feed': NS_FEED,
 }
 
+# filter properties that we copy verbatim between XML and YAML.
+# Basically, everything that is not a label.
 basic_props = [
-    'hasTheWord',
-    'shouldStar',
-    'shouldArchive',
-    'shouldTrash',
-    'shouldNeverMarkAsImportant',
     'from',
+    'hasTheWord',
+    'shouldArchive',
+    'shouldMarkAsRead',
+    'shouldNeverMarkAsImportant',
+    'shouldNeverSpam',
+    'shouldStar',
+    'shouldTrash',
+    'smartLabelToApply',
+    'subject',
 ]
 
 def same_condition(f1, f2):
