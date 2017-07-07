@@ -80,6 +80,9 @@ class BulkFilter(cliff.command.Command):
         g = p.add_argument_group('Filters')
         g.add_argument('-Q', '--query',
                        help='A gmail-syntax search query')
+        g.add_argument('--fail-if-empty',
+                       action='store_true',
+                       help='Exit with an error if filter matches no messages')
 
         g = p.add_argument_group('Actions')
         g.add_argument('-F', '--flag',
@@ -177,6 +180,13 @@ class BulkFilter(cliff.command.Command):
         self.server.login(account['username'], account['password'])
 
         selected_folders = self.select_folders(args.folders)
+        if not selected_folders:
+            raise exceptions.NoMatchingFolders('No folders to process')
+
+        if args.fail_if_empty and len(selected_folders) > 1:
+            raise exceptions.InvalidOptions(
+                '--fail-if-empty can only be used when processing '
+                'a single folder')
         self.process_folders(selected_folders)
 
     def process_folders(self, folders):
@@ -202,6 +212,9 @@ class BulkFilter(cliff.command.Command):
             messages = self.server.gmail_search(self.args.query)
 
         self.app.LOG.info('found %d messages', len(messages))
+
+        if self.args.fail_if_empty and not messages:
+            raise exceptions.NoMatchingMessages('Filter returned zero messages')
 
         for chunk in chunker(messages, self.args.chunksize):
             self.process_messages(folder, chunk)
