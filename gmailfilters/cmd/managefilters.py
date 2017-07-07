@@ -26,6 +26,7 @@ basic_props = [
     'shouldStar',
     'shouldArchive',
     'shouldTrash',
+    'shouldNeverMarkAsImportant',
     'from',
 ]
 
