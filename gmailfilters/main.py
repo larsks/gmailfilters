@@ -3,12 +3,9 @@ import cliff.app
 import cliff.commandmanager
 import os
 import sys
-import xdg.BaseDirectory
 import yaml
 
-default_config = os.path.join(xdg.BaseDirectory.xdg_config_home,
-                              'gmailfilters.yml')
-
+from gmailfilters import default
 
 class GmailFilterApp (cliff.app.App):
     def __init__(self):
@@ -29,7 +26,7 @@ class GmailFilterApp (cliff.app.App):
 
     def initialize_app(self, argv):
         if not self.options.config:
-            for cfgpath in ['gmailfilters.yml', default_config]:
+            for cfgpath in ['gmailfilters.yml', default.config_path]:
                 self.LOG.debug('looking for config in %s', cfgpath)
                 if os.path.isfile(cfgpath):
                     self.options.config = cfgpath

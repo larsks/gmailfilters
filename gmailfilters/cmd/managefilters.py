@@ -25,6 +25,7 @@ querymap = {
 # Basically, everything that is not a label.
 basic_props = [
     'from',
+    'to',
     'hasTheWord',
     'shouldArchive',
     'shouldMarkAsRead',
