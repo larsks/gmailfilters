@@ -83,9 +83,15 @@ class BulkFilter(BaseClientCommand):
         g.add_argument('-D', '--delete',
                        action='store_true',
                        help='Delete matching messages')
+        g.add_argument('-T', '--trash',
+                       action='store_true',
+                       help='Move matching messages to trash')
         g.add_argument('-S', '--show',
                        action='store_true',
                        help='Show matching messages')
+        g.add_argument('--archive', '-A',
+                       action='store_true',
+                       help='Remove matching messages from your inbox')
 
         p.add_argument('folders', nargs='*',
                        default=['@all'])
@@ -181,12 +187,22 @@ class BulkFilter(BaseClientCommand):
             res = self.server.add_gmail_labels(chunk, add_labels)
             res = self.server.remove_gmail_labels(chunk, del_labels)
 
+        if self.args.archive:
+            self.app.LOG.info('archiving messages %d...%d from %s (%s)',
+                         chunk[0], chunk[-1], folder, self.args.label)
+            res = self.server.remove_gmail_labels(chunk, ['\\Inbox'])
+
         if self.args.show:
             self.app.LOG.info('getting info for messages %d...%d from %s',
                          chunk[0], chunk[-1], folder)
             res = self.server.fetch(chunk, data=['ENVELOPE', 'X-GM-LABELS'])
             for msg in sorted(res.keys()):
                 self.show_message(msg, res[msg])
+
+        if self.args.trash:
+            self.app.LOG.info('trashing messages %d...%d from %s',
+                              chunk[0], chunk[-1], folder)
+            res = self.server.add_gmail_labels(chunk, ['\\Trash'])
 
         if self.args.delete:
             self.app.LOG.info('deleting messages %d...%d from %s',
