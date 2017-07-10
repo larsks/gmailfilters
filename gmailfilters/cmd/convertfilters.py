@@ -66,9 +66,9 @@ def to_prop_str(v):
         return str(v)
 
 
-class ManageFilters(cliff.command.Command):
+class ConvertFilters(cliff.command.Command):
     def get_parser(self, prog_name):
-        p = super(ManageFilters, self).get_parser(prog_name)
+        p = super(ConvertFilters, self).get_parser(prog_name)
 
         p.add_argument('--toxml',
                        action='store_true')
@@ -151,4 +151,4 @@ class ManageFilters(cliff.command.Command):
                 doc.append(entry)
 
         with (sys.stdout if args.output is None else open(args.output, 'w')) as fd:
-            fd.write(etree.tostring(doc, pretty_print=True))
+            fd.write(etree.tostring(doc, pretty_print=True).decode())
