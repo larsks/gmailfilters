@@ -92,26 +92,29 @@ class ApplyFilters(BaseClientCommand):
                 self.process_messages(folder, filter, chunk)
 
     def process_messages(self, folder, filter, chunk):
-        if 'label' in filter:
-            labels = filter['label'].split()
-            self.app.LOG.info('labelling messages %d...%d from %s (%s)',
-                         chunk[0], chunk[-1], folder, labels)
-            res = self.server.add_gmail_labels(chunk, labels)
-
-        if filter.get('shouldMarkAsRead'):
-            self.app.LOG.info('marking messages %d...%d as read from %s',
-                         chunk[0], chunk[-1], folder)
-            res = self.server.add_flags(chunk, imapclient.SEEN)
-
-        if filter.get('shouldArchive'):
-            self.app.LOG.info('archiving messages %d...%d as read from %s',
-                         chunk[0], chunk[-1], folder)
-            res = self.server.remove_gmail_labels(chunk, '\\Inbox')
-
-        if filter.get('shouldTrash'):
-            self.app.LOG.info('deleting messages %d...%d from %s',
-                         chunk[0], chunk[-1], folder)
-            res = self.server.delete_messages(chunk)
-            self.app.LOG.info('expunging messages %d...%d from %s',
-                              chunk[0], chunk[-1], folder)
-            self.server.expunge()
+        for k, v in filter.items():
+            if k in ['query', 'hasTheWord', 'to', 'from', 'subject']:
+                continue
+            elif k == 'label':
+                labels = v.split()
+                self.app.LOG.info('labelling messages %d...%d from %s (%s)',
+                             chunk[0], chunk[-1], folder, labels)
+                res = self.server.add_gmail_labels(chunk, labels)
+            elif k == 'shouldMarkAsread' and v:
+                self.app.LOG.info('marking messages %d...%d as read from %s',
+                             chunk[0], chunk[-1], folder)
+                res = self.server.add_flags(chunk, imapclient.SEEN)
+            elif k == 'shouldArchive' and v:
+                self.app.LOG.info('archiving messages %d...%d as read from %s',
+                             chunk[0], chunk[-1], folder)
+                res = self.server.remove_gmail_labels(chunk, '\\Inbox')
+            elif k == 'shouldTrash' and v:
+                self.app.LOG.info('deleting messages %d...%d from %s',
+                             chunk[0], chunk[-1], folder)
+                res = self.server.delete_messages(chunk)
+                self.app.LOG.info('expunging messages %d...%d from %s',
+                                  chunk[0], chunk[-1], folder)
+                self.server.expunge()
+            else:
+                self.app.LOG.warn('ignoring unsupported action: %s (%s)',
+                                  k, v)
