@@ -19,7 +19,7 @@ class BaseClientCommand(cliff.command.Command):
                        type=int,
                        default=0,
                        metavar='debug_level',
-                       choices=range(6),
+                       choices=list(range(6)),
                        help='Enable IMAP protocol debugging')
 
         return p

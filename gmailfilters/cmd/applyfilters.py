@@ -92,7 +92,7 @@ class ApplyFilters(BaseClientCommand):
                 self.process_messages(folder, filter, chunk)
 
     def process_messages(self, folder, filter, chunk):
-        for k, v in filter.items():
+        for k, v in list(filter.items()):
             if k in ['query', 'hasTheWord', 'to', 'from', 'subject']:
                 continue
             elif k == 'label':
