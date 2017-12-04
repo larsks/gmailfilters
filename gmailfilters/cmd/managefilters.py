@@ -151,4 +151,5 @@ class ManageFilters(cliff.command.Command):
                 doc.append(entry)
 
         with (sys.stdout if args.output is None else open(args.output, 'w')) as fd:
-            fd.write(etree.tostring(doc, pretty_print=True))
+            fd.write(etree.tostring(doc,
+                                    pretty_print=True, encoding='unicode'))
