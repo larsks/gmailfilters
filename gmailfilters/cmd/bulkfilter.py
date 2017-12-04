@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import argparse
 import cliff.command
 import imapclient
@@ -99,7 +101,7 @@ class BulkFilter(BaseClientCommand):
         return p
 
     def show_message(self, msgid, msg):
-        print '%04d: %s' % (msgid, msg['ENVELOPE'].subject)
+        print('%04d: %s' % (msgid, msg['ENVELOPE'].subject))
         for header in headers:
             if not getattr(msg['ENVELOPE'], header[0], None):
                 continue
@@ -111,11 +113,11 @@ class BulkFilter(BaseClientCommand):
                 except TypeError:
                     hval = '...'
 
-            print '      %s: %s' % (
-                header[1], hval)
-        print '      Labels: %s' % (
-            ' ' .join(str(x) for x in msg['X-GM-LABELS']))
-        print
+            print('      %s: %s' % (
+                header[1], hval))
+        print('      Labels: %s' % (
+            ' ' .join(str(x) for x in msg['X-GM-LABELS'])))
+        print()
 
     def take_action(self, args):
         self.args = args
