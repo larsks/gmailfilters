@@ -36,7 +36,7 @@ class GmailFilterApp (cliff.app.App):
             self.LOG.debug('reading configuration from %s',
                                self.options.config)
             with open(self.options.config) as fd:
-                self.config = yaml.load(fd)
+                self.config = yaml.safe_load(fd)
 
 
 def main(argv=sys.argv[1:]):

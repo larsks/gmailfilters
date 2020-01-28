@@ -112,7 +112,7 @@ class ConvertFilters(cliff.command.Command):
 
     def cmd_toxml(self, args):
         with (sys.stdin if args.input is None else open(args.input)) as fd:
-            filters = yaml.load(fd)
+            filters = yaml.safe_load(fd)
 
         doc = etree.Element('{%s}feed' % NS_FEED, nsmap=nsmap)
         title = etree.SubElement(doc, '{%s}title' % NS_FEED)

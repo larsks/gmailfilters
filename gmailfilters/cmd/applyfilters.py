@@ -55,7 +55,7 @@ class ApplyFilters(BaseClientCommand):
                 'Unable to find account named "%s"' % args.account)
 
         with open(args.filters) as fd:
-            filters = yaml.load(fd)
+            filters = yaml.safe_load(fd)
 
         self.filters = self.build_filters(filters)
 
